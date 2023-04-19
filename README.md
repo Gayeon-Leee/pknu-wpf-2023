@@ -13,3 +13,9 @@ Windows Presentation Foundation
 - WPF 기초
 	- 기본컨트롤
 	- 레이아웃 Grid
+	- 심플앱 만들기
+	- 데이터바인딩
+	
+## 3일차
+- WPF 기초
+	- 데이터바인딩 계속

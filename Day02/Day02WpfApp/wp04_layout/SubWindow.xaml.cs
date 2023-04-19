@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,24 +10,18 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace wp02_simplecontrols
+namespace wp04_layout
 {
     /// <summary>
-    /// MainWindow.xaml에 대한 상호 작용 논리
+    /// SubWindow.xaml에 대한 상호 작용 논리
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class SubWindow : Window
     {
-        public MainWindow()
+        public SubWindow()
         {
             InitializeComponent();
-        }
-
-        private void SldStep_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            PgbStep.Value = (int)SldStep.Value;
         }
     }
 }
