@@ -28,3 +28,4 @@ Windows Presentation Foundation
 	- MVVM 패턴
 	- 데이터바인딩 DB연동
 
+<img src="https://raw.githubusercontent.com/Gayeon-Leee/pknu-wpf-2023/main/Images/wpf01.png" width="700"/>
