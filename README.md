@@ -26,6 +26,23 @@ Windows Presentation Foundation
 - WPF 응용
 	- MahApps.Metro 디자인적용
 	- MVVM 패턴
-	- 데이터바인딩 DB연동
+
 
 <img src="https://raw.githubusercontent.com/Gayeon-Leee/pknu-wpf-2023/main/Images/wpf01.png" width="700"/>
+
+## 5일차
+- WPF 응용
+	- MVVM 패턴
+	- MVVM framework / Caliburn
+	- 데이터바인딩 DB연동
+	
+## 6일차
+- WPF 응용
+	- 영화 검색앱
+		- TMDB OpenAPI
+		- MahApps.Metro
+		- MahApps.Metro.IconPacks
+		- Newtonsoft.Json
+
+6일차 영화검색앱 중간
+<img src="https://raw.githubusercontent.com/Gayeon-Leee/pknu-wpf-2023/main/Images/wpf02.png" width="700"/>	
