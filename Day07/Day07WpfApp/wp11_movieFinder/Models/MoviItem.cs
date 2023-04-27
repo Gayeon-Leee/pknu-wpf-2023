@@ -7,7 +7,7 @@ using System.Web;
 
 namespace wp11_movieFinder.Models
 {
-    public class MoviItem
+    public class MovieItem
     {
         public bool Adult { get; set; }
         public int Id { get; set; }
