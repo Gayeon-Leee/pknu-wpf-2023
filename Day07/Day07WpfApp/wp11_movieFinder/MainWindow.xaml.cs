@@ -1,7 +1,5 @@
 ﻿using MahApps.Metro.Controls;
-using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Crypto.Tls;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,7 +12,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using wp11_movieFinder.Logics;
@@ -64,11 +61,11 @@ namespace wp11_movieFinder
             }
         }
 
-        
+
         // 텍스트박스에서 키를 입력할 때 엔터를 누르면 검색 시작
-        private void TxtMovieName_KeyDown(object sender, KeyEventArgs e) 
+        private void TxtMovieName_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key== Key.Enter)
+            if (e.Key == Key.Enter)
             {
                 BtnSearchMovie_Click(sender, e);
             }
@@ -77,9 +74,9 @@ namespace wp11_movieFinder
         // 실제 검색 메서드
         private async Task SearchMovie(string movieName)
         {
-            string tmdb_apiKey = "71c2cce9ff09e884f695f79cd958a4a0";
+            string tmdb_apiKey = "TMDB Key";
             string encoding_movieName = HttpUtility.UrlEncode(movieName, Encoding.UTF8);
-            string openApiUri = $@"https://api.themoviedb.org/3/search/movie?api_key={tmdb_apiKey}&language=ko-KR&page=1&include_adult=false&query={encoding_movieName}"; 
+            string openApiUri = $@"https://api.themoviedb.org/3/search/movie?api_key={tmdb_apiKey}&language=ko-KR&page=1&include_adult=false&query={encoding_movieName}";
             string result = string.Empty; // 결과값
 
             // api 실행할 객체
@@ -111,8 +108,8 @@ namespace wp11_movieFinder
             var jsonResult = JObject.Parse(result); // string -> json
 
             var total = Convert.ToInt32(jsonResult["total_results"]); // 전체 검색 결과 수
-            // await Commons.ShowMessageAsync("검색결과", total.ToString());
-            
+                                                                      // await Commons.ShowMessageAsync("검색결과", total.ToString());
+
             var items = jsonResult["results"];
             var json_array = items as JArray; // items를 데이터 그리드에 표시
 
@@ -139,7 +136,7 @@ namespace wp11_movieFinder
             this.DataContext = movieItems;
             isFavorite = false; // 즐겨찾기 아님
             StsResult.Content = $"OpenAPi {movieItems.Count}건 조회 완료";
-            
+
         }
 
         private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
@@ -150,7 +147,7 @@ namespace wp11_movieFinder
         // 그리드에서 셀 선택하면
         private async void GrdResult_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
-            try 
+            try
             {
                 string posterPath = string.Empty;
                 if (GrdResult.SelectedItem is MovieItem) // openAPI로 검색된 영화의 포스터
@@ -164,7 +161,7 @@ namespace wp11_movieFinder
                     posterPath += movie.Poster_Path;
                 }
 
-                
+
                 Debug.WriteLine(posterPath);
                 if (string.IsNullOrEmpty(posterPath)) // 포스터 이미지가 없으면 NO_Picture
                 {
@@ -180,18 +177,18 @@ namespace wp11_movieFinder
             {
                 await Commons.ShowMessageAsync("오류", $"임지로드 오류 발생");
             }
-           
+
         }
 
         // 영화 예고편 유튭 보기
         private async void BtnWatchTrailer_Click(object sender, RoutedEventArgs e)
         {
-            if(GrdResult.SelectedItems.Count == 0)
+            if (GrdResult.SelectedItems.Count == 0)
             {
                 await Commons.ShowMessageAsync("유튜브", "영화를 선택하세요.");
                 return;
             }
-            if(GrdResult.SelectedItems.Count > 1)
+            if (GrdResult.SelectedItems.Count > 1)
             {
                 await Commons.ShowMessageAsync("유튜브", "영화를 하나만 선택하세요.");
                 return;
@@ -213,7 +210,7 @@ namespace wp11_movieFinder
 
             //var movie = GrdResult?.SelectedItem as MovieItem;
             //await Commons.ShowMessageAsync("유튜브", $"예고편 볼 영화 {movieName}");
-            
+
             var trailerWinow = new TrailerWindow(movieName);
             trailerWinow.Owner = this; // TrailerWindow의 부모는 MainWindow
             trailerWinow.WindowStartupLocation = WindowStartupLocation.CenterOwner; // 부모창의 정중앙에 위치
@@ -375,7 +372,7 @@ namespace wp11_movieFinder
                     }
 
                     // await Commons.ShowMessageAsync("데이터 개수", result.ToString());
-                    
+
                     if (GrdResult.SelectedItems.Count == insRes)
                     {
                         await Commons.ShowMessageAsync("저장", "DB저장 성공");
@@ -450,7 +447,7 @@ namespace wp11_movieFinder
 
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await Commons.ShowMessageAsync("오류", $"DB조회 오류 {ex.Message}");
             }
@@ -480,7 +477,7 @@ namespace wp11_movieFinder
                     var query = "DELETE FROM FavoriteMovieItem WHERE Id = @Id";
                     var delRes = 0;
 
-                    foreach(FavoriteMovieItem item in GrdResult.SelectedItems)
+                    foreach (FavoriteMovieItem item in GrdResult.SelectedItems)
                     {
                         SqlCommand cmd = new SqlCommand(query, conn);
                         cmd.Parameters.AddWithValue("@Id", item.Id);
@@ -492,7 +489,7 @@ namespace wp11_movieFinder
                     if (delRes == GrdResult.SelectedItems.Count)
                     {
                         await Commons.ShowMessageAsync("삭제", "DB 삭제 성공!");
-                        StsResult.Content = $"즐겨찾기 {delRes}건 삭제 완료";
+                        StsResult.Content = $"즐겨찾기 {delRes}건 삭제 완료"; // 이건 화면에 안나옴
 
                     }
                     else
