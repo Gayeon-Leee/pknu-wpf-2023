@@ -123,7 +123,7 @@ namespace wp12_finedustCheck
                                             Coordy,
                                             Ison,
                                             Pm10_after,
-                                            Pm25_after,
+                                            Pm25_after,                                                
                                             State,
                                             Timestamp,
                                             Company_id,
