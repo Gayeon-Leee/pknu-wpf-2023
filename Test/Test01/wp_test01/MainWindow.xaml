@@ -30,7 +30,9 @@
             </Grid.ColumnDefinitions>
 
             <ComboBox Grid.Column="0" x:Name="CboField" FontSize="14" Margin="5, 10"
-                      mah:TextBoxHelper.Watermark="분야별 선택"/>
+                      mah:TextBoxHelper.Watermark="분야별 선택"
+                      mah:TextBoxHelper.UseFloatingWatermark="True"
+                      KeyDown="CboField_KeyDown"/>
             <Button Grid.Column="1" x:Name="BtnSearchField" FontSize="14" Margin="5, 10"
                     Content="검색" Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Click="BtnSearchField_Click">
                 <Button.ContentTemplate>
@@ -42,26 +44,6 @@
                     </DataTemplate>
                 </Button.ContentTemplate>
             </Button> 
-            <!--<TextBox Grid.Column="0" x:Name="TxtMovieName" FontSize="14" Margin="5, 10"
-                     mah:TextBoxHelper.Watermark="검색할 영화명 입력"
-                     mah:TextBoxHelper.UseFloatingWatermark="True"
-                     mah:TextBoxHelper.ClearTextButton="True" 
-                     InputMethod.PreferredImeState="On"
-                     InputMethod.PreferredImeConversionMode="Native"
-                     KeyDown="TxtMovieName_KeyDown"/>
-            --><!-- InputMethod는 한글 입력을 위한 부분.. 저거 해놓으면 실행시 한글이 먼저 입력됨--><!--
-            <Button Grid.Column="1" x:Name="BtnSearchMovie" FontSize="14" Margin="5, 10"
-                    Content="검색" Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Click="BtnSearchMovie_Click">
-                <Button.ContentTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconModern Kind="Magnify" Margin="5"/>
-                            <TextBlock Text="{Binding}" Margin="5"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </Button.ContentTemplate>
-            </Button>-->
-
         </Grid>
         
         <!-- 데이터 그리드 영역 -->
@@ -82,6 +64,56 @@
             </DataGrid.Columns>
         </DataGrid>
         
+        <!-- 즐겨찾기 버튼 영역 -->
+        <StackPanel Grid.Row="2" Grid.Column="0"  Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="BtnAddFavorite" Content="즐겨찾기 추가" Margin="5, 20" FontSize="12"
+                    Style="{StaticResource MahApps.Styles.Button.Square.Accent}">
+                <Button.ContentTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconModern Kind="ListAdd" Margin="5"/>
+                            <TextBlock Text="{Binding}" Margin="5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Button.ContentTemplate>
+            </Button>
+
+            <Button x:Name="BtnViewFavorite" Content="즐겨찾기 보기" Margin="5, 20" FontSize="12"
+                    Style="{StaticResource MahApps.Styles.Button.Square.Highlight}">
+                <Button.ContentTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconModern Kind="List" Margin="5"/>
+                            <TextBlock Text="{Binding}" Margin="5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Button.ContentTemplate>
+            </Button>
+
+            <Button x:Name="BtnDelFavorite" Content="즐겨찾기 삭제" Margin="5, 20" FontSize="12"
+                    Style="{StaticResource MahApps.Styles.Button.Square}">
+                <Button.ContentTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconModern Kind="ListDelete" Margin="5"/>
+                            <TextBlock Text="{Binding}" Margin="5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Button.ContentTemplate>
+            </Button>
+        </StackPanel>
+
+        <!-- 지도 영역 -->
+        <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
+            <GroupBox Header="지도" Margin="10"
+                      mah:HeaderedControlHelper.HeaderFontSize="14"
+                      mah:HeaderedControlHelper.HeaderHorizontalContentAlignment="Center"
+                      mah:HeaderedControlHelper.HeaderFontFamily="NanumGothic"
+                      mah:HeaderedControlHelper.HeaderFontWeight="Bold">
+            </GroupBox>
+        </Grid>
+
+
         <!-- 하단 상태표시바 -->
         <StatusBar Grid.Row="3">
             <StatusBarItem Content="강원도 반려동물 동반가능 장소 검색 앱"/>

@@ -47,15 +47,15 @@ namespace wp_test01
         #region < 검색 버튼 이벤트 >
         private async void BtnSearchField_Click(object sender, RoutedEventArgs e)
         {
-           if (string.IsNullOrEmpty(CboField.Text))
+           if (string.IsNullOrEmpty(CboField.Text)) // 입력검증
             {
                 await Commons.ShowMessageAsync("검색", "검색할 분야를 선택하세요.");
                 return;
             }
 
-            try
+            try // 실제 검색
             {
-                SearchField();
+                await SearchField();
             }
             catch (Exception ex)
             {
@@ -63,7 +63,15 @@ namespace wp_test01
             }
         }
 
-        public async void SearchField()
+        private void CboField_KeyDown(object sender, KeyEventArgs e) // 콤보박스에서 값 선택하고 엔터키 쳐도 검색하는 이벤트
+        {
+            if (e.Key == Key.Enter)
+            {
+                BtnSearchField_Click(sender, e);
+            }
+        }
+
+        public async Task SearchField()
         {
             // 콤보박스 선택값을 오픈API 검색하기 위한 코드값으로 변환
             string searchCode = string.Empty;
@@ -74,26 +82,24 @@ namespace wp_test01
             else if (CboField.Text == "동물병원") searchCode = "PC05";
 
 
-            string openApiUri = $"http://pettravel.kr/api/listPart.do?page=1&pageBlock=50&partCode={searchCode}";
-            string result = string.Empty;
+            string openApiUri = $"http://pettravel.kr/api/listPart.do?page=1&pageBlock=50&partCode={searchCode}"; // openAPI 요청
+            string result = string.Empty; //결과값 초기화
 
-            // WebRequest, WebResponse 객체
+            // API 실행할 WebRequest, WebResponse 객체
             WebRequest req = null;
             WebResponse res = null;
             StreamReader reader = null;
 
-            try
+            try // API 요청
             {
                 req = WebRequest.Create(openApiUri); // URL을 넣어서 객체를 생성
                 res = await req.GetResponseAsync(); // 요청한 결과를 응답에 할당
                 reader = new StreamReader(res.GetResponseStream());
                 result = reader.ReadToEnd(); // json결과 텍스트로 저장
-
-                Debug.WriteLine(result);
             }
             catch (Exception ex)
             {
-                throw ex; //  BtnSearchMovie_Click에서 오류메세지 보여주기 때문에 여기선 그냥 던져주기만 하면 됨
+                throw ex; //  BtnSearchMovie_Click에서 오류메세지 보여주기 때문에 여기선 그냥 던져주기
             }
             finally
             {
@@ -107,23 +113,17 @@ namespace wp_test01
 
             var jsonResult = JArray.Parse(result); // 이렇게 하면 배열로 인식한 json을 읽을 수는 있음
             // 디버그 출력은 되는데.. 데이터 그리드에 어떻게 뿌리지?????? 이거 해결해야함
-            
-            
-            //var test = JObject.Parse(jsonResult.ToString());
-            //var items = test["resultList"];
-            //var json_array = items as JArray;
-            
+            var jsonObj = jsonResult[0]; // 받아오려는 API가 json 배열로 이루어져 있음 => 배열의 0번 인덱스로 접근 => 0번 인덱스는 json 객체임
+            var items = jsonObj["resultList"]; // json 객체의 key값인 resultList로 value에 접근
+            var json_array = items as JArray; // 이렇게 안하고 그냥 jsonResult나 jsonObj로 foreach문 돌리면 child값에 접근할 수 없다고 나옴
+            // 오류메세지 : cannot access child value on Newtonsoft.json.linq.jproperty 쌤께 여쭤보기!!
 
+            Debug.WriteLine(jsonObj);
 
-
-            /*var data = jsonResult;
-            var json_array = data as JArray;*/
 
             var locations = new List<Locations>(); // json에서 넘어온 배열을 담을 장소
-            foreach (var val in jsonResult)
+            foreach (var val in json_array)
             {
-                //JObject jobj = JObject.Parse(jsonResult.ToString());
-
                 var Locations = new Locations()
                 {
                     Id = 0,
@@ -139,12 +139,11 @@ namespace wp_test01
                 };
                 locations.Add(Locations);
                 }
-                this.DataContext = locations;
+                this.DataContext = locations; // 그리드 바인딩
                 StsResult.Content = $"OpenAPI {locations.Count}건 조회 완료";
         }
-
-
-
         #endregion
+
+        
     }
 }
