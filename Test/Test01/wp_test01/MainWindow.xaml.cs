@@ -1,7 +1,10 @@
 ﻿using MahApps.Metro.Controls;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -29,11 +32,14 @@ namespace wp_test01
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
+        bool isFavorite = false; // false -> openAPi 검색해온 결과, true -> 즐겨찾기 보기
+
         public MainWindow()
         {
             InitializeComponent();
 
             CboField.ItemsSource = fieldList;
+
         }
 
         #region < 검색 콤보박스 바인딩 리스트 >
@@ -140,10 +146,225 @@ namespace wp_test01
                 locations.Add(Locations);
                 }
                 this.DataContext = locations; // 그리드 바인딩
+                isFavorite = false;
                 StsResult.Content = $"OpenAPI {locations.Count}건 조회 완료";
+        }
+
+
+        #endregion
+
+        #region < 지도 표시 >
+
+        private void GrdResult_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
+        {
+
+            if (GrdResult.SelectedItem is Locations) // openAPI로 검색된 장소의 지도 표시
+            {
+                var loc = GrdResult.SelectedItem as Locations;
+                string title = loc.Title;
+                BrsLoc.Address = $"https://map.naver.com/v5/search/{title}";
+            }
+
+            else if (GrdResult.SelectedItem is FavoriteLocations) // 즐겨찾기 DB에서 가져온 장소 표시
+            {
+                var loc = GrdResult.SelectedItem as FavoriteLocations;
+                string title = loc.Title;
+                BrsLoc.Address = $"https://map.naver.com/v5/search/{title}";
+            }
         }
         #endregion
 
-        
+        #region < 즐겨찾기 추가 >
+        private async void BtnAddFavorite_Click(object sender, RoutedEventArgs e)
+        {
+            if (GrdResult.SelectedItems.Count == 0)
+            {
+                await Commons.ShowMessageAsync("오류", "즐겨찾기에 추가할 장소를 선택하세요");
+                return;
+            }
+            if (isFavorite)
+            {
+                await Commons.ShowMessageAsync("오류", "이미 즐겨찾기한 장소입니다.");
+                return;
+            }
+
+            try
+            {
+                using(MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
+                {
+                    if (conn.State == System.Data.ConnectionState.Closed) conn.Open();
+                    var query = @"INSERT INTO favoritelocations
+                                             (Id,
+                                              ContentSeq,
+                                              AreaName,
+                                              PartName,
+                                              Title,
+                                              Address,
+                                              Latitude,
+                                              Longitude,
+                                              Tel)
+                                         VALUES
+                                             (@Id,
+                                              @ContentSeq,
+                                              @AreaName,
+                                              @PartName,
+                                              @Title,
+                                              @Address,
+                                              @Latitude,
+                                              @Longitude,
+                                              @Tel)";
+
+                    var insRes = 0;
+                    foreach(Locations item in GrdResult.SelectedItems)
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                        cmd.Parameters.AddWithValue(@"Id", item.Id);
+                        cmd.Parameters.AddWithValue(@"ContentSeq", item.ContentSeq);
+                        cmd.Parameters.AddWithValue(@"AreaName", item.AreaName);
+                        cmd.Parameters.AddWithValue(@"PartName", item.PartName);
+                        cmd.Parameters.AddWithValue(@"Title", item.Title);
+                        cmd.Parameters.AddWithValue(@"Address", item.Address);
+                        cmd.Parameters.AddWithValue(@"Latitude", item.Latitude);
+                        cmd.Parameters.AddWithValue(@"Longitude", item.Longitude);
+                        cmd.Parameters.AddWithValue(@"Tel", item.Tel);
+
+                        insRes += cmd.ExecuteNonQuery();
+                    }
+
+                    if (GrdResult.SelectedItems.Count == insRes)
+                    {
+                        await Commons.ShowMessageAsync("저장", "DB저장 성공");
+                        StsResult.Content = $"즐겨찾기 {insRes}건 저장 완료";
+                    }
+                    else
+                    {
+                        await Commons.ShowMessageAsync("저장", "DB저장오류 관리자에게 문의하세요.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await Commons.ShowMessageAsync("오류", $"DB저장 오류 {ex.Message}");
+            }
+        }
+        #endregion
+
+        #region < 즐겨찾기 보기 >
+        private async void BtnViewFavorite_Click(object sender, RoutedEventArgs e)
+        {
+            this.DataContext = null;
+            CboField.Text = string.Empty;
+
+            List<FavoriteLocations> list = new List<FavoriteLocations>();
+            try
+            {
+                using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
+                {
+                    if (conn.State == System.Data.ConnectionState.Closed) conn.Open();
+
+                    var query = @"SELECT Id,
+                                         ContentSeq,
+                                         AreaName,
+                                         PartName,
+                                         Title,
+                                         Address,
+                                         Latitude,
+                                         Longitude,
+                                         Tel
+                                    FROM favoritelocations
+                                   ORDER BY AreaName ASC";
+
+                    var cmd = new MySqlCommand(query, conn);
+                    var adapter = new MySqlDataAdapter(cmd);
+                    var dSet = new DataSet();
+                    adapter.Fill(dSet, "FavoriteLocations");
+
+                    foreach (DataRow dr in dSet.Tables["FavoriteLocations"].Rows)
+                    {
+                        list.Add(new FavoriteLocations
+                        {
+                            Id = Convert.ToInt32(dr["Id"]),
+                            ContentSeq = Convert.ToInt32(dr["ContentSeq"]),
+                            AreaName = Convert.ToString(dr["AreaName"]),
+                            PartName = Convert.ToString(dr["PartName"]),
+                            Title = Convert.ToString(dr["Title"]),
+                            Address = Convert.ToString(dr["Address"]),
+                            Latitude = Convert.ToDouble(dr["Latitude"]),
+                            Longitude = Convert.ToDouble(dr["Longitude"]),
+                            Tel = Convert.ToString(dr["Tel"]),
+                        });
+                    }
+
+                    this.DataContext = list;
+                    isFavorite = true;
+                    StsResult.Content = $"즐겨찾기 {list.Count}건 조회 완료";
+                }
+            }
+            catch(Exception ex)
+            {
+                await Commons.ShowMessageAsync("오류", $"DB조회 오류 {ex.Message}");
+
+            }
+        }
+
+        #endregion
+
+        #region < 즐겨찾기 삭제 >
+        private async void BtnDelFavorite_Click(object sender, RoutedEventArgs e)
+        {
+            if (isFavorite == false)
+            {
+                await Commons.ShowMessageAsync("오류", "즐겨찾기만 삭제할 수 있습니다.");
+                return;
+            }
+
+            if (GrdResult.SelectedItems.Count == 0)
+            {
+                await Commons.ShowMessageAsync("오류", "삭제할 장소를 선택하세요.");
+                return;
+            }
+
+            try
+            {
+                using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
+                {
+                    if (conn.State == ConnectionState.Closed) conn.Open();
+                    var query = "DELETE FROM favoritelocations WHERE Id = @Id";
+                    var delRes = 0;
+
+                    foreach (FavoriteLocations item in GrdResult.SelectedItems)
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@Id", item.Id);
+
+                        delRes += cmd.ExecuteNonQuery();
+
+                    }
+
+                    if (delRes == GrdResult.SelectedItems.Count)
+                    {
+                        await Commons.ShowMessageAsync("삭제", "DB 삭제 성공!");
+                        StsResult.Content = $"즐겨찾기 {delRes}건 삭제 완료"; // 이건 화면에 안나옴
+
+                    }
+                    else
+                    {
+                        await Commons.ShowMessageAsync("삭제", "DB 삭제 일부 성공!"); // 발생할 일이 거의 없긴 함
+
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                await Commons.ShowMessageAsync("오류", $"DB삭제 오류 {ex.Message}");
+            }
+            
+            BtnViewFavorite_Click(sender, e); // 삭제하고 자동으로 즐겨찾기 보기 이멘트 핸들러 한 번 실행
+
+        }
+
+        #endregion
+
     }
 }

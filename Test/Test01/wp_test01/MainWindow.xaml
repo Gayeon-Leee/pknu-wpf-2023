@@ -7,19 +7,26 @@
         xmlns:local="clr-namespace:wp_test01"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:cefSharp="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
         mc:Ignorable="d"
-        Title="Dogs_On_Travel" Height="450" Width="800">
+        Title="Dogs_On_Travel" Height="620" Width="1200">
+    <mah:MetroWindow.IconTemplate>
+        <DataTemplate>
+            <iconPacks:PackIconFontAwesome Kind="PawSolid" Foreground="White" Margin="10,7,0,0"/>
+        </DataTemplate>
+    </mah:MetroWindow.IconTemplate>
+
     <Grid Margin="10">
         <!-- 전체 그리드 높이/넓이-->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1*"/>
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="80"/>
-            <RowDefinition Height="20"/>
+            <RowDefinition Height="10"/>
         </Grid.RowDefinitions>
         
         <!-- 검색어 입력 부분 -->
@@ -38,7 +45,7 @@
                 <Button.ContentTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconModern Kind="Magnify" Margin="5"/>
+                            <iconPacks:PackIconMaterial Kind="Magnify" Margin="5,7,5,5"/>
                             <TextBlock Text="{Binding}" Margin="5"/>
                         </StackPanel>
                     </DataTemplate>
@@ -49,9 +56,11 @@
         <!-- 데이터 그리드 영역 -->
         <DataGrid Grid.Row="1" Grid.Column="0" x:Name="GrdResult" Margin="5,7,5,3"
                   IsReadOnly="True" Style="{StaticResource MahApps.Styles.DataGrid.Azure}"
-                  ItemsSource="{Binding}" AutoGenerateColumns="False" >
+                  ItemsSource="{Binding}" AutoGenerateColumns="False"
+                  SelectedCellsChanged="GrdResult_SelectedCellsChanged">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding AreaName}" Header="지역" FontWeight="ExtraBold"/>
+                <DataGridTextColumn Binding="{Binding AreaName}" Header="지역"/>
+                <DataGridTextColumn Binding="{Binding PartName}" Header="구분"/>
                 <DataGridTextColumn Binding="{Binding Title}" Header="장소명"/>
                 <DataGridTextColumn Binding="{Binding Address}" Header="주소"/>
                 <DataGridTextColumn Binding="{Binding Tel}" Header="전화번호">
@@ -67,7 +76,7 @@
         <!-- 즐겨찾기 버튼 영역 -->
         <StackPanel Grid.Row="2" Grid.Column="0"  Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="BtnAddFavorite" Content="즐겨찾기 추가" Margin="5, 20" FontSize="12"
-                    Style="{StaticResource MahApps.Styles.Button.Square.Accent}">
+                    Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Click="BtnAddFavorite_Click">
                 <Button.ContentTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -79,7 +88,7 @@
             </Button>
 
             <Button x:Name="BtnViewFavorite" Content="즐겨찾기 보기" Margin="5, 20" FontSize="12"
-                    Style="{StaticResource MahApps.Styles.Button.Square.Highlight}">
+                    Style="{StaticResource MahApps.Styles.Button.Square.Highlight}" Click="BtnViewFavorite_Click">
                 <Button.ContentTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -91,7 +100,7 @@
             </Button>
 
             <Button x:Name="BtnDelFavorite" Content="즐겨찾기 삭제" Margin="5, 20" FontSize="12"
-                    Style="{StaticResource MahApps.Styles.Button.Square}">
+                    Style="{StaticResource MahApps.Styles.Button.Square}" Click="BtnDelFavorite_Click">
                 <Button.ContentTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -104,18 +113,20 @@
         </StackPanel>
 
         <!-- 지도 영역 -->
-        <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
-            <GroupBox Header="지도" Margin="10"
+        <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="3">
+            <GroupBox Header="위치 정보" Margin="10"
                       mah:HeaderedControlHelper.HeaderFontSize="14"
                       mah:HeaderedControlHelper.HeaderHorizontalContentAlignment="Center"
                       mah:HeaderedControlHelper.HeaderFontFamily="NanumGothic"
                       mah:HeaderedControlHelper.HeaderFontWeight="Bold">
+                <cefSharp:ChromiumWebBrowser x:Name="BrsLoc" Address="https://map.naver.com" />
             </GroupBox>
         </Grid>
 
+        
 
         <!-- 하단 상태표시바 -->
-        <StatusBar Grid.Row="3">
+        <StatusBar Grid.Row="3" Grid.ColumnSpan="2" Margin="-10">
             <StatusBarItem Content="강원도 반려동물 동반가능 장소 검색 앱"/>
             <Separator Style="{StaticResource MahApps.Styles.Separator.StatusBar}"/>
             <StatusBarItem x:Name="StsResult"/>

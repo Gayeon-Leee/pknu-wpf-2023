@@ -175,7 +175,7 @@ namespace wp11_movieFinder
             }
             catch
             {
-                await Commons.ShowMessageAsync("오류", $"임지로드 오류 발생");
+                await Commons.ShowMessageAsync("오류", $"이미지로드 오류 발생");
             }
 
         }
