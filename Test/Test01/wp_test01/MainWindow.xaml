@@ -86,7 +86,7 @@
                     </DataTemplate>
                 </Button.ContentTemplate>
             </Button>
-
+            <!--
             <Button x:Name="BtnViewFavorite" Content="즐겨찾기 보기" Margin="5, 20" FontSize="12"
                     Style="{StaticResource MahApps.Styles.Button.Square.Highlight}" Click="BtnViewFavorite_Click">
                 <Button.ContentTemplate>
@@ -110,10 +110,23 @@
                     </DataTemplate>
                 </Button.ContentTemplate>
             </Button>
+            -->
+
+            <Button x:Name="BtnTest" Content="즐겨찾기 관리" Margin="5, 20" FontSize="12"
+                    Style="{StaticResource MahApps.Styles.Button.Square.Highlight}" Click="BtnTest_Click">
+                <Button.ContentTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconModern Kind="List" Margin="5"/>
+                            <TextBlock Text="{Binding}" Margin="5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Button.ContentTemplate>
+            </Button>
         </StackPanel>
 
         <!-- 지도 영역 -->
-        <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="3">
+        <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Margin="0,0,0,10">
             <GroupBox Header="위치 정보" Margin="10"
                       mah:HeaderedControlHelper.HeaderFontSize="14"
                       mah:HeaderedControlHelper.HeaderHorizontalContentAlignment="Center"

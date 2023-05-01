@@ -75,6 +75,7 @@ Windows Presentation Foundation
 
 
 미세먼지앱 중간
+
 <img src="https://raw.githubusercontent.com/Gayeon-Leee/pknu-wpf-2023/main/Images/wpf05.png" width="700"/>
 
 ## 9일차
@@ -88,3 +89,19 @@ Windows Presentation Foundation
 		- 데이터포털 OpenAPI
 		- 네이버, 카카오 OpenAPI
 		- 기타 OpenAPI
+		
+
+## 10일차
+- WPF 응용
+	- 반려동물 동반 여행지 검색앱
+		- 강원도 반려동물 동반관광 API
+		- DB 데이터바인딩(MySQL)
+		- MahApps.Metro
+		- MahApps.Metro.IconPacks
+		- Newtonsoft.Json
+		- GMap.NET.Core
+		- GMap.NET.WinPresentation
+		
+반려동물 동반 여행지 검색앱 완료
+
+<img src="https://raw.githubusercontent.com/Gayeon-Leee/pknu-wpf-2023/main/Images/wpf06.gif" width="700"/>

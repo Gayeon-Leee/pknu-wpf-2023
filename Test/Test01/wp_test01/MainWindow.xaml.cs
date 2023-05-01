@@ -4,24 +4,13 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Security.RightsManagement;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xml.Linq;
 using wp_test01.Logics;
 using wp_test01.Models;
 
@@ -32,7 +21,7 @@ namespace wp_test01
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
-        bool isFavorite = false; // false -> openAPi 검색해온 결과, true -> 즐겨찾기 보기
+        public bool isFavorite = false; // false -> openAPi 검색해온 결과, true -> 즐겨찾기 보기
 
         public MainWindow()
         {
@@ -161,15 +150,15 @@ namespace wp_test01
             if (GrdResult.SelectedItem is Locations) // openAPI로 검색된 장소의 지도 표시
             {
                 var loc = GrdResult.SelectedItem as Locations;
-                string title = loc.Title;
-                BrsLoc.Address = $"https://map.naver.com/v5/search/{title}";
+                string address = loc.Address;
+                BrsLoc.Address = $"https://map.naver.com/v5/search/{address}";
             }
 
             else if (GrdResult.SelectedItem is FavoriteLocations) // 즐겨찾기 DB에서 가져온 장소 표시
             {
                 var loc = GrdResult.SelectedItem as FavoriteLocations;
-                string title = loc.Title;
-                BrsLoc.Address = $"https://map.naver.com/v5/search/{title}";
+                string address = loc.Address;
+                BrsLoc.Address = $"https://map.naver.com/v5/search/{address}";
             }
         }
         #endregion
@@ -250,6 +239,7 @@ namespace wp_test01
         }
         #endregion
 
+        /*
         #region < 즐겨찾기 보기 >
         private async void BtnViewFavorite_Click(object sender, RoutedEventArgs e)
         {
@@ -365,6 +355,15 @@ namespace wp_test01
         }
 
         #endregion
+        */
 
+        private void BtnTest_Click(object sender, RoutedEventArgs e)
+        {
+            var subWindow = new SubWindow();
+            subWindow.Owner = this; // TrailerWindow의 부모는 MainWindow
+            subWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner; // 부모창의 정중앙에 위치
+            // trailerWinow.Show(); // 모달리스 => 자식창 연 상태에서 부모창을 건들 수 있어서 사용X
+            subWindow.ShowDialog();  // 모달창
+        }
     }
 }
