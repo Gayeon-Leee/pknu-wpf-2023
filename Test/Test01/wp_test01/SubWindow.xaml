@@ -8,20 +8,23 @@
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks" 
         mc:Ignorable="d"
         Title="즐겨찾기 관리" Height="600" Width="1000">
+   
     <Grid Margin="10">
+        <!-- 전체 그리드 높이/넓이-->
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="80"/>
             <RowDefinition Height="10"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="390"/>
             <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-
+        
+        <!--데이터 그리드 영역-->
         <DataGrid Grid.Column="0" x:Name="GrdResult" Margin="5,7,5,3"
                   IsReadOnly="True" Style="{StaticResource MahApps.Styles.DataGrid.Azure}"
-                  ItemsSource="{Binding}" AutoGenerateColumns="False">
+                  ItemsSource="{Binding}" AutoGenerateColumns="False" SelectedCellsChanged="GrdResult_SelectedCellsChanged" >
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding AreaName}" Header="지역"/>
                 <DataGridTextColumn Binding="{Binding PartName}" Header="구분"/>
@@ -36,12 +39,18 @@
                 </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
-
-        <Grid Grid.Row="0" Name="mapgroup" Grid.RowSpan="2" Grid.ColumnSpan="2" Margin="333,0,0,0" >
+        
+        <!-- 지도 표시 영역 -->
+        <Grid Grid.Row="0" Grid.Column="1" Name="mapgroup" Grid.RowSpan="2" Margin="0,0,0,20">
             <local:MapControl x:Name="gmap" />
         </Grid>
-
+        
+        <!-- 버튼 영역 -->
         <StackPanel Grid.Row="1" Grid.Column="0"  Orientation="Horizontal" HorizontalAlignment="Right" >
+            <ComboBox x:Name="CboArea" FontSize="14" Margin="5, 20"
+                      mah:TextBoxHelper.Watermark="분야별 조회"
+                      mah:TextBoxHelper.UseFloatingWatermark="True" SelectionChanged="CboArea_SelectionChanged" />
+
             <Button x:Name="BtnViewFavorite" Content="즐겨찾기 보기" Margin="5, 20" FontSize="12"
                     Style="{StaticResource MahApps.Styles.Button.Square.Highlight}" Click="BtnViewFavorite_Click">
                 <Button.ContentTemplate>
@@ -67,6 +76,7 @@
             </Button>
         </StackPanel>
         
+        <!-- 하단 상태 표시바-->
         <StatusBar Grid.Row="3" Grid.ColumnSpan="2" Margin="-10">
             <StatusBarItem/>
             <Separator Style="{StaticResource MahApps.Styles.Separator.StatusBar}"/>

@@ -38,7 +38,6 @@ namespace wp_test01
         };
         #endregion
 
-
         #region < 검색 버튼 이벤트 >
         private async void BtnSearchField_Click(object sender, RoutedEventArgs e)
         {
@@ -77,7 +76,7 @@ namespace wp_test01
             else if (CboField.Text == "동물병원") searchCode = "PC05";
 
 
-            string openApiUri = $"http://pettravel.kr/api/listPart.do?page=1&pageBlock=50&partCode={searchCode}"; // openAPI 요청
+            string openApiUri = $"http://pettravel.kr/api/listPart.do?page=1&pageBlock=500&partCode={searchCode}"; // openAPI 요청
             string result = string.Empty; //결과값 초기화
 
             // API 실행할 WebRequest, WebResponse 객체
@@ -107,7 +106,7 @@ namespace wp_test01
             // 이 방식으로 하면 자꾸 오류남 => 받으려는 openAPI가 대괄호로 묶여있어 json배열로 인식
 
             var jsonResult = JArray.Parse(result); // 이렇게 하면 배열로 인식한 json을 읽을 수는 있음
-            // 디버그 출력은 되는데.. 데이터 그리드에 어떻게 뿌리지?????? 이거 해결해야함
+            // 디버그 출력은 되는데.. 데이터 그리드에 어떻게 뿌리지?????? 이거 해결해야함 => json parsing!
             var jsonObj = jsonResult[0]; // 받아오려는 API가 json 배열로 이루어져 있음 => 배열의 0번 인덱스로 접근 => 0번 인덱스는 json 객체임
             var items = jsonObj["resultList"]; // json 객체의 key값인 resultList로 value에 접근
             var json_array = items as JArray; // 이렇게 안하고 그냥 jsonResult나 jsonObj로 foreach문 돌리면 child값에 접근할 수 없다고 나옴
@@ -239,124 +238,7 @@ namespace wp_test01
         }
         #endregion
 
-        /*
-        #region < 즐겨찾기 보기 >
-        private async void BtnViewFavorite_Click(object sender, RoutedEventArgs e)
-        {
-            this.DataContext = null;
-            CboField.Text = string.Empty;
-
-            List<FavoriteLocations> list = new List<FavoriteLocations>();
-            try
-            {
-                using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
-                {
-                    if (conn.State == System.Data.ConnectionState.Closed) conn.Open();
-
-                    var query = @"SELECT Id,
-                                         ContentSeq,
-                                         AreaName,
-                                         PartName,
-                                         Title,
-                                         Address,
-                                         Latitude,
-                                         Longitude,
-                                         Tel
-                                    FROM favoritelocations
-                                   ORDER BY AreaName ASC";
-
-                    var cmd = new MySqlCommand(query, conn);
-                    var adapter = new MySqlDataAdapter(cmd);
-                    var dSet = new DataSet();
-                    adapter.Fill(dSet, "FavoriteLocations");
-
-                    foreach (DataRow dr in dSet.Tables["FavoriteLocations"].Rows)
-                    {
-                        list.Add(new FavoriteLocations
-                        {
-                            Id = Convert.ToInt32(dr["Id"]),
-                            ContentSeq = Convert.ToInt32(dr["ContentSeq"]),
-                            AreaName = Convert.ToString(dr["AreaName"]),
-                            PartName = Convert.ToString(dr["PartName"]),
-                            Title = Convert.ToString(dr["Title"]),
-                            Address = Convert.ToString(dr["Address"]),
-                            Latitude = Convert.ToDouble(dr["Latitude"]),
-                            Longitude = Convert.ToDouble(dr["Longitude"]),
-                            Tel = Convert.ToString(dr["Tel"]),
-                        });
-                    }
-
-                    this.DataContext = list;
-                    isFavorite = true;
-                    StsResult.Content = $"즐겨찾기 {list.Count}건 조회 완료";
-                }
-            }
-            catch(Exception ex)
-            {
-                await Commons.ShowMessageAsync("오류", $"DB조회 오류 {ex.Message}");
-
-            }
-        }
-
-        #endregion
-
-        #region < 즐겨찾기 삭제 >
-        private async void BtnDelFavorite_Click(object sender, RoutedEventArgs e)
-        {
-            if (isFavorite == false)
-            {
-                await Commons.ShowMessageAsync("오류", "즐겨찾기만 삭제할 수 있습니다.");
-                return;
-            }
-
-            if (GrdResult.SelectedItems.Count == 0)
-            {
-                await Commons.ShowMessageAsync("오류", "삭제할 장소를 선택하세요.");
-                return;
-            }
-
-            try
-            {
-                using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
-                {
-                    if (conn.State == ConnectionState.Closed) conn.Open();
-                    var query = "DELETE FROM favoritelocations WHERE Id = @Id";
-                    var delRes = 0;
-
-                    foreach (FavoriteLocations item in GrdResult.SelectedItems)
-                    {
-                        MySqlCommand cmd = new MySqlCommand(query, conn);
-                        cmd.Parameters.AddWithValue("@Id", item.Id);
-
-                        delRes += cmd.ExecuteNonQuery();
-
-                    }
-
-                    if (delRes == GrdResult.SelectedItems.Count)
-                    {
-                        await Commons.ShowMessageAsync("삭제", "DB 삭제 성공!");
-                        StsResult.Content = $"즐겨찾기 {delRes}건 삭제 완료"; // 이건 화면에 안나옴
-
-                    }
-                    else
-                    {
-                        await Commons.ShowMessageAsync("삭제", "DB 삭제 일부 성공!"); // 발생할 일이 거의 없긴 함
-
-                    }
-                }
-            }
-            catch(Exception ex)
-            {
-                await Commons.ShowMessageAsync("오류", $"DB삭제 오류 {ex.Message}");
-            }
-            
-            BtnViewFavorite_Click(sender, e); // 삭제하고 자동으로 즐겨찾기 보기 이멘트 핸들러 한 번 실행
-
-        }
-
-        #endregion
-        */
-
+        #region < 즐겨찾기 관리 버튼 이벤트 - 자식창 띄우기 >
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
             var subWindow = new SubWindow();
@@ -365,5 +247,6 @@ namespace wp_test01
             // trailerWinow.Show(); // 모달리스 => 자식창 연 상태에서 부모창을 건들 수 있어서 사용X
             subWindow.ShowDialog();  // 모달창
         }
+        #endregion
     }
 }

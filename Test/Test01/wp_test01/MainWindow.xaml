@@ -86,7 +86,7 @@
                     </DataTemplate>
                 </Button.ContentTemplate>
             </Button>
-            <!--
+            <!-- 즐겨찾기 보기 / 삭제 => SubWindow로
             <Button x:Name="BtnViewFavorite" Content="즐겨찾기 보기" Margin="5, 20" FontSize="12"
                     Style="{StaticResource MahApps.Styles.Button.Square.Highlight}" Click="BtnViewFavorite_Click">
                 <Button.ContentTemplate>
