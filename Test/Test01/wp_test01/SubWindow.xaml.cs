@@ -191,9 +191,7 @@ namespace wp_test01
         }
         #endregion
 
-        #region < 콤보박스 상세 조회>
-        
-        #endregion
+        #region < 하고싶은거! 콤보박스 상세 조회>
 
         private async void CboArea_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -201,6 +199,7 @@ namespace wp_test01
 
             if (CboArea.Text == "전체")
             {
+                return;
             }
 
 
@@ -278,5 +277,7 @@ namespace wp_test01
                 }
             }
         }
+        #endregion
+
     }
 }
