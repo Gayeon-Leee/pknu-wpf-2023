@@ -137,8 +137,6 @@ namespace wp_test01
                 isFavorite = false;
                 StsResult.Content = $"OpenAPI {locations.Count}건 조회 완료";
         }
-
-
         #endregion
 
         #region < 지도 표시 >

@@ -104,4 +104,4 @@ Windows Presentation Foundation
 		
 반려동물 동반 여행지 검색앱 완료
 
-<img src="https://raw.githubusercontent.com/Gayeon-Leee/pknu-wpf-2023/main/Images/wpf06.gif" width="700"/>
+<img src="https://raw.githubusercontent.com/Gayeon-Leee/pknu-wpf-2023/main/Images/wpf07.gif" width="700"/>

@@ -21,6 +21,7 @@ namespace wp_test01
     /// </summary>
     public partial class SubWindow : MetroWindow
     {
+        public bool isFavorite = false;
         public SubWindow()
         {
             InitializeComponent();
@@ -45,7 +46,8 @@ namespace wp_test01
 
         #region < 즐겨찾기 보기 >
         private async void BtnViewFavorite_Click(object sender, RoutedEventArgs e)
-        {
+        {   
+            
             this.DataContext = null;
 
             List<FavoriteLocations> list = new List<FavoriteLocations>();
@@ -55,7 +57,9 @@ namespace wp_test01
                 {
                     if (conn.State == System.Data.ConnectionState.Closed) conn.Open();
 
-                    var query = @"SELECT Id,
+                    if (CboArea.Text == "전체")
+                    {
+                        var tquery = $@"SELECT Id,
                                          ContentSeq,
                                          AreaName,
                                          PartName,
@@ -65,6 +69,51 @@ namespace wp_test01
                                          Longitude,
                                          Tel
                                     FROM favoritelocations
+                                   ORDER BY AreaName ASC";
+
+                        var tcmd = new MySqlCommand(tquery, conn);
+                        var tadapter = new MySqlDataAdapter(tcmd);
+                        var tdSet = new DataSet();
+                        tadapter.Fill(tdSet, "FavoriteLocations");
+
+                        foreach (DataRow dr in tdSet.Tables["FavoriteLocations"].Rows)
+                        {
+                            list.Add(new FavoriteLocations
+                            {
+                                Id = Convert.ToInt32(dr["Id"]),
+                                ContentSeq = Convert.ToInt32(dr["ContentSeq"]),
+                                AreaName = Convert.ToString(dr["AreaName"]),
+                                PartName = Convert.ToString(dr["PartName"]),
+                                Title = Convert.ToString(dr["Title"]),
+                                Address = Convert.ToString(dr["Address"]),
+                                Latitude = Convert.ToDouble(dr["Latitude"]),
+                                Longitude = Convert.ToDouble(dr["Longitude"]),
+                                Tel = Convert.ToString(dr["Tel"]),
+                            });
+                        }
+
+                        this.DataContext = list;
+                        StsResult.Content = $"즐겨찾기 {list.Count}건 조회 완료";
+                    }
+
+                    string searchCode = string.Empty;
+                    if (CboArea.Text == "관광지") searchCode = "관광지";
+                    else if (CboArea.Text == "숙박") searchCode = "숙박";
+                    else if (CboArea.Text == "식음료") searchCode = "식음료";
+                    else if (CboArea.Text == "체험") searchCode = "체험";
+                    else if (CboArea.Text == "동물병원") searchCode = "동물병원";
+
+                    var query = $@"SELECT Id,
+                                         ContentSeq,
+                                         AreaName,
+                                         PartName,
+                                         Title,
+                                         Address,
+                                         Latitude,
+                                         Longitude,
+                                         Tel
+                                    FROM favoritelocations
+                                    WHERE PartName = '{searchCode}'
                                    ORDER BY AreaName ASC";
 
                     var cmd = new MySqlCommand(query, conn);
@@ -89,6 +138,7 @@ namespace wp_test01
                     }
 
                     this.DataContext = list;
+                    isFavorite = true;
                     StsResult.Content = $"즐겨찾기 {list.Count}건 조회 완료";
 
                 }
@@ -190,94 +240,5 @@ namespace wp_test01
             }
         }
         #endregion
-
-        #region < 하고싶은거! 콤보박스 상세 조회>
-
-        private async void CboArea_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            this.DataContext = null;
-
-            if (CboArea.Text == "전체")
-            {
-                return;
-            }
-
-
-            if (CboArea.Text == "관광지")
-            {
-                List<FavoriteLocations> tlist = new List<FavoriteLocations>();
-                try
-                {
-                    using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
-                    {
-                        if (conn.State == System.Data.ConnectionState.Closed) conn.Open();
-
-                        var query = @"SELECT Id,
-                                         ContentSeq,
-                                         AreaName,
-                                         PartName,
-                                         Title,
-                                         Address,
-                                         Latitude,
-                                         Longitude,
-                                         Tel
-                                    FROM favoritelocations
-                                   WHERE partName = '관광지'
-                                   ORDER BY AreaName ASC";
-
-                        var cmd = new MySqlCommand(query, conn);
-                        var adapter = new MySqlDataAdapter(cmd);
-                        var dSet = new DataSet();
-                        adapter.Fill(dSet, "FavoriteLocations");
-
-                        foreach (DataRow dr in dSet.Tables["FavoriteLocations"].Rows)
-                        {
-                            tlist.Add(new FavoriteLocations
-                            {
-                                Id = Convert.ToInt32(dr["Id"]),
-                                ContentSeq = Convert.ToInt32(dr["ContentSeq"]),
-                                AreaName = Convert.ToString(dr["AreaName"]),
-                                PartName = Convert.ToString(dr["PartName"]),
-                                Title = Convert.ToString(dr["Title"]),
-                                Address = Convert.ToString(dr["Address"]),
-                                Latitude = Convert.ToDouble(dr["Latitude"]),
-                                Longitude = Convert.ToDouble(dr["Longitude"]),
-                                Tel = Convert.ToString(dr["Tel"]),
-                            });
-                        }
-
-                        this.DataContext = tlist;
-                        StsResult.Content = $"즐겨찾기 {tlist.Count}건 조회 완료";
-
-                    }
-                }
-                catch (Exception ex)
-                {
-                    await this.ShowMessageAsync("오류", $"DB조회 오류 {ex.Message}", MessageDialogStyle.Affirmative, null);
-                }
-
-
-                // 불러온 위치데이터를 바로 지도에 표시
-                gmap.Markers.Clear(); // Clear 해줘야 즐겨찾기 삭제 하고 다시 조회 이벤트 할때 Marker 리셋됨
-                foreach (FavoriteLocations item in GrdResult.Items)
-                {
-                    double mapLat = item.Latitude;
-                    double mapLon = item.Longitude;
-                    PointLatLng point = new PointLatLng(mapLat, mapLon);
-                    GMapMarker marker = new GMapMarker(point);
-
-                    marker.Shape = new Ellipse
-                    {
-                        Width = 12,
-                        Height = 12,
-                        Stroke = Brushes.Black,
-                        StrokeThickness = 2.5
-                    };
-                    gmap.Markers.Add(marker);
-                }
-            }
-        }
-        #endregion
-
     }
 }
