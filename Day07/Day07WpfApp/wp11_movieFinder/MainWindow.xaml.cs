@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.Controls;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -84,7 +85,7 @@ namespace wp11_movieFinder
             WebResponse resp = null;
             StreamReader reader = null;
 
-            // Naver API 요청
+            // API 요청
             try
             {
                 req = WebRequest.Create(openApiUri); // URL을 넣어서 객체를 생성
@@ -233,9 +234,9 @@ namespace wp11_movieFinder
                 return;
             }
 
-            /*
+
             List<FavoriteMovieItem> list = new List<FavoriteMovieItem>();
-            foreach(MovieItem item in GrdResult.SelectedItems)
+            foreach (MovieItem item in GrdResult.SelectedItems)
             {
                 var favoriteMovieItem = new FavoriteMovieItem()
                 {
@@ -253,10 +254,9 @@ namespace wp11_movieFinder
                 };
 
                 list.Add(favoriteMovieItem);
-            }*/
+            }
 
-            #region < MySQL 테스트 >
-            /*
+            #region < MySQL >
             try
             {
                 // DB 데이터 입력
@@ -309,15 +309,26 @@ namespace wp11_movieFinder
 
                         insRes += cmd.ExecuteNonQuery();
                     }
+
+                    if (GrdResult.SelectedItems.Count == insRes)
+                    {
+                        await Commons.ShowMessageAsync("저장", "DB저장 성공");
+                        StsResult.Content = $"즐겨찾기 {insRes}건 저장 완료";
+                    }
+                    else
+                    {
+                        await Commons.ShowMessageAsync("저장", "DB저장오류 관리자에게 문의하세요.");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 await Commons.ShowMessageAsync("오류", $"DB저장 오류 {ex.Message}");
             }
-            */
-            #endregion
 
+            #endregion
+            #region <SQL Server용>
+            /*
             try
             {
                 // DB 데이터 입력
@@ -388,6 +399,8 @@ namespace wp11_movieFinder
             {
                 await Commons.ShowMessageAsync("오류", $"DB저장 오류 {ex.Message}");
             }
+            */
+            #endregion
         }
 
         // 즐겨찾기 보기
@@ -399,7 +412,7 @@ namespace wp11_movieFinder
             List<FavoriteMovieItem> list = new List<FavoriteMovieItem>();
             try
             {
-                using (SqlConnection conn = new SqlConnection(Commons.connString))
+                using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
                 {
                     if (conn.State == ConnectionState.Closed) conn.Open();
 
@@ -417,8 +430,8 @@ namespace wp11_movieFinder
                                   FROM FavoriteMovieItem
                                  ORDER BY Id ASC";
 
-                    var cmd = new SqlCommand(query, conn);
-                    var adapter = new SqlDataAdapter(cmd);
+                    var cmd = new MySqlCommand(query, conn);
+                    var adapter = new MySqlDataAdapter(cmd);
                     var dSet = new DataSet();
                     adapter.Fill(dSet, "FavoriteMovieItem");
 
@@ -470,7 +483,7 @@ namespace wp11_movieFinder
 
             try // 삭제
             {
-                using (SqlConnection conn = new SqlConnection(Commons.connString))
+                using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
                 {
                     if (conn.State == ConnectionState.Closed) conn.Open();
 
@@ -479,7 +492,7 @@ namespace wp11_movieFinder
 
                     foreach (FavoriteMovieItem item in GrdResult.SelectedItems)
                     {
-                        SqlCommand cmd = new SqlCommand(query, conn);
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
                         cmd.Parameters.AddWithValue("@Id", item.Id);
 
                         delRes += cmd.ExecuteNonQuery();
