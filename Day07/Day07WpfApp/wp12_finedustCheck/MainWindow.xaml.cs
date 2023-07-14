@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -72,11 +73,10 @@ namespace wp12_finedustCheck
                     var dustSensors = new List<DustSensor>();
                     foreach (var sensor in json_array)
                     {
-                       
                         dustSensors.Add(new DustSensor
                         {
                             Id = 0,
-                            Dev_id = Convert.ToString(sensor["dev_id"]),
+                            Dev_id = Convert.ToString(sensor["dev_id"]), // openAPI
                             Name = Convert.ToString(sensor["name"]),
                             Loc = Convert.ToString(sensor["loc"]),
                             Coordx = Convert.ToDouble(sensor["coordx"]),
@@ -88,59 +88,59 @@ namespace wp12_finedustCheck
                             Timestamp = Convert.ToDateTime(sensor["timestamp"]),
                             Company_id = Convert.ToString(sensor["company_id"]),
                             Company_name = Convert.ToString(sensor["company_name"])
-
-                        });
+                        }); 
                     }
 
                     this.DataContext = dustSensors;
-                    StsResult.Content = $"OpenAPI {dustSensors.Count}건 조회 완료";
+                    StsResult.Content = $"OpenAPI {dustSensors.Count}건 조회완료";
                 }
             }
             catch (Exception ex)
             {
                 await Commons.ShowMessageAsync("오류", $"JSON 처리오류 {ex.Message}");
-            }
+            }            
         }
 
-        // 검색한 결과 DB에 저장(MySQL)
+        // 검색한 결과 DB(MySQL)에 저장
         private async void BtnSaveData_Click(object sender, RoutedEventArgs e)
         {
             if (GrdResult.Items.Count == 0)
             {
-                await Commons.ShowMessageAsync("오류", "조회 후 저장하세요");
+                await Commons.ShowMessageAsync("오류", "조회쫌하고 저장하세요.");
                 return;
             }
+
             try
             {
-                using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
+                using (MySqlConnection conn = new MySqlConnection(Commons.myConnString))
                 {
-                    if (conn.State == System.Data.ConnectionState.Closed) conn.Open();
+                    if (conn.State == ConnectionState.Closed) conn.Open();
                     var query = @"INSERT INTO dustsensor
-                                            (Dev_id,
-                                            Name,
-                                            Loc,
-                                            Coordx,
-                                            Coordy,
-                                            Ison,
-                                            Pm10_after,
-                                            Pm25_after,                                                
-                                            State,
-                                            Timestamp,
-                                            Company_id,
-                                            Company_name)
-                                            VALUES
-                                            (@Dev_id,
-                                            @Name,
-                                            @Loc,
-                                            @Coordx,
-                                            @Coordy,
-                                            @Ison,
-                                            @Pm10_after,
-                                            @Pm25_after,
-                                            @State,
-                                            @Timestamp,
-                                            @Company_id,
-                                            @Company_name)";
+                                        (Dev_id,
+                                        Name,
+                                        Loc,
+                                        Coordx,
+                                        Coordy,
+                                        Ison,
+                                        Pm10_after,
+                                        Pm25_after,
+                                        State,
+                                        Timestamp,
+                                        Company_id,
+                                        Company_name)
+                                        VALUES
+                                        (@Dev_id,
+                                        @Name,
+                                        @Loc,
+                                        @Coordx,
+                                        @Coordy,
+                                        @Ison,
+                                        @Pm10_after,
+                                        @Pm25_after,
+                                        @State,
+                                        @Timestamp,
+                                        @Company_id,
+                                        @Company_name)";
 
                     var insRes = 0;
                     foreach (var temp in GrdResult.Items)
@@ -165,35 +165,91 @@ namespace wp12_finedustCheck
 
                             insRes += cmd.ExecuteNonQuery();
                         }
-                        
                     }
 
-                    await Commons.ShowMessageAsync("저장", "DB저장 성공");
+                    await Commons.ShowMessageAsync("저장", "DB저장 성공!!");
                     StsResult.Content = $"DB저장 {insRes}건 성공";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex) 
             {
-                await Commons.ShowMessageAsync("오류", $"DB저장 오류 : {ex.Message}");
+                await Commons.ShowMessageAsync("오류", $"DB저장 오류! {ex.Message}");
             }
+
         }
 
-        // DB에서 조회한 리스트 뿌리기
+        // DB(MySQL)에서 조회 리스트뿌리기
         private void CboReqDate_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (CboReqDate.SelectedValue != null)
+            {
+                //MessageBox.Show(CboReqDate.SelectedValue.ToString());
+                using (MySqlConnection conn = new MySqlConnection(Commons.myConnString))
+                {
+                    conn.Open();
+                    var query = @"SELECT Id,
+                                         Dev_id,
+                                         Name,
+                                         Loc,
+                                         Coordx,
+                                         Coordy,
+                                         Ison,
+                                         Pm10_after,
+                                         Pm25_after,
+                                         State,
+                                         Timestamp,
+                                         Company_id,
+                                         Company_name
+                                    FROM dustsensor
+                                   WHERE date_format(Timestamp, '%Y-%m-%d') = @Timestamp";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@Timestamp", CboReqDate.SelectedValue.ToString());
+                    MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+                    DataSet ds = new DataSet();
+                    adapter.Fill(ds, "dustsensor");
+                    List<DustSensor> dustSensors = new List<DustSensor>();
+                    foreach (DataRow row in ds.Tables["dustsensor"].Rows)
+                    {
+                        dustSensors.Add(new DustSensor
+                        {
+                            Id = Convert.ToInt32(row["Id"]), // mysql 컬럼이름에 대소문자 구분없이 쓰기때문에
+                            Dev_id = Convert.ToString(row["Dev_id"]),
+                            Name = Convert.ToString(row["Name"]),
+                            Loc = Convert.ToString(row["Loc"]),
+                            Coordx = Convert.ToDouble(row["Coordx"]),
+                            Coordy = Convert.ToDouble(row["Coordy"]),
+                            Ison = Convert.ToBoolean(row["Ison"]),
+                            Pm10_after = Convert.ToInt32(row["Pm10_after"]),
+                            Pm25_after = Convert.ToInt32(row["Pm25_after"]),
+                            State = Convert.ToInt32(row["State"]),
+                            Timestamp = Convert.ToDateTime(row["Timestamp"]),
+                            Company_id = Convert.ToString(row["Company_id"]),
+                            Company_name = Convert.ToString(row["Company_name"])
+                        });
+                    }
 
+                    this.DataContext = dustSensors;
+                    StsResult.Content = $"DB {dustSensors.Count}건 조회완료";
+                }
+            } 
+            else
+            {
+                this.DataContext = null;
+                StsResult.Content = $"DB 조회클리어";
+            }            
         }
 
         private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // 콤보박스에 들어갈 날짜를 DB에서 불러와서
-            using (MySqlConnection conn = new MySqlConnection(Commons.MyConnString))
+            // 콤보박스에 들어갈 날짜를 DB에서 불러와서 
+            // 저장한 뒤에도 콤보박스를 재조회해야 날짜전부 출력
+            using (MySqlConnection conn = new MySqlConnection(Commons.myConnString))
             {
                 conn.Open();
                 var query = @"SELECT DATE_FORMAT(Timestamp, '%Y-%m-%d') AS Save_Date
-                              FROM dustsensor
-                             GROUP BY 1
-                              ORDER BY 1";
+                                FROM dustsensor
+                               GROUP BY 1
+                               ORDER BY 1 ";
                 MySqlCommand cmd = new MySqlCommand(query, conn);
                 MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
                 DataSet ds = new DataSet();
@@ -206,6 +262,17 @@ namespace wp12_finedustCheck
 
                 CboReqDate.ItemsSource = saveDateList;
             }
+        }
+
+        // 그리드 특정Row 더블클릭 새창에 센서위치 출력
+        private void GrdResult_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var selItem = GrdResult.SelectedItem as DustSensor;
+
+            var mapWindow = new MapWindow(selItem.Coordy, selItem.Coordx); // 부모창 위치값을 자식장으로 전달
+            mapWindow.Owner = this; // MainWindow부모
+            mapWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner; // 부모창 중간에 출력
+            mapWindow.ShowDialog();
         }
     }
 }
